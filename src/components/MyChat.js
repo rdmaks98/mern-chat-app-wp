@@ -84,7 +84,7 @@ const MyChat = (props) => {
                 p={3}
                 bg="#F8F8F8"
                 w="100%"
-                h="100%"
+                h="128vh"
                 borderRadius="lg"
                 overflowY="hidden"
             >

@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react'
 import { ChatState } from '../Context/ChatProvider'
 import { Text, Box } from "@chakra-ui/layout"
-import { IconButton, Spinner, useToast } from "@chakra-ui/react"
-import { ArrowBackIcon } from "@chakra-ui/icons";
+import { IconButton, Spinner, useToast, InputLeftElement, InputGroup, Input } from "@chakra-ui/react"
+import { ArrowBackIcon, LinkIcon } from "@chakra-ui/icons";
 import { FormControl } from "@chakra-ui/form-control";
-import { Input } from "@chakra-ui/input";
+import InputEmoji from "react-input-emoji";
 import socketIO from 'socket.io-client';
 import {
     getSender, getSenderFull
@@ -28,7 +28,8 @@ const SingleChat = (props) => {
     const [typing, setTyping] = useState(false);
     const [istyping, setIsTyping] = useState(false);
     const toast = useToast();
-
+    const [isUpload, setIsUpload] = useState()
+    const [isImage, setIsImage] = useState();
     const { selectedChat, setSelectedChat, user, notification, setNotification } = ChatState();
     const { fetchAgain, setFetchAgain } = props
     const defaultOptions = {
@@ -39,6 +40,16 @@ const SingleChat = (props) => {
             preserveAspectRatio: "xMidYMid slice",
         },
     };
+
+    const doHandleUpload = async (e) => {
+        const { name } = e.target;
+        if (name === 'uploadfile') {
+            setIsUpload(URL.createObjectURL(e.target.files[0]));
+            setIsImage(e.target.files[0]);
+        }
+        console.group("add group")
+    }
+
     const fetchMessages = async () => {
         if (!selectedChat) return;
 
@@ -70,24 +81,24 @@ const SingleChat = (props) => {
             });
         }
     };
-
     const sendMessage = async (event) => {
-        if (event.key === "Enter" && newMessage) {
+        if ((event.key === "Enter" && newMessage) || (isImage)) {
             socket.emit("stop typing", selectedChat._id);
             try {
                 const config = {
                     headers: {
-                        "Content-type": "application/json",
+                        'content-type': 'multipart/form-data',
                         Authorization: `Bearer ${user.token}`,
                     },
                 };
                 setNewMessage("");
+                const formData = new FormData();
+                formData.append('content', newMessage)
+                formData.append('chatId', selectedChat._id)
+                formData.append('image', isImage)
                 const { data } = await axios.post(
                     "/api/message",
-                    {
-                        content: newMessage,
-                        chatId: selectedChat,
-                    },
+                    formData,
                     config
                 );
                 socket.emit("new message", data);
@@ -105,6 +116,27 @@ const SingleChat = (props) => {
         }
     };
 
+    function handleOnEnter(text) {
+        console.log('enter', text)
+        setNewMessage(text);
+
+        if (!socketConnected) return;
+
+        if (!typing) {
+            setTyping(true);
+            socket.emit("typing", selectedChat._id);
+        }
+        let lastTypingTime = new Date().getTime();
+        var timerLength = 3000;
+        setTimeout(() => {
+            var timeNow = new Date().getTime();
+            var timeDiff = timeNow - lastTypingTime;
+            if (timeDiff >= timerLength && typing) {
+                socket.emit("stop typing", selectedChat._id);
+                setTyping(false);
+            }
+        }, timerLength);
+    }
     useEffect(() => {
         socket.emit("setup", user);
         socket.on("connected", () => setSocketConnected(true));
@@ -136,37 +168,17 @@ const SingleChat = (props) => {
             }
         });
     });
-
-    const typingHandler = (e) => {
-        setNewMessage(e.target.value);
-
-        if (!socketConnected) return;
-
-        if (!typing) {
-            setTyping(true);
-            socket.emit("typing", selectedChat._id);
-        }
-        let lastTypingTime = new Date().getTime();
-        var timerLength = 3000;
-        setTimeout(() => {
-            var timeNow = new Date().getTime();
-            var timeDiff = timeNow - lastTypingTime;
-            if (timeDiff >= timerLength && typing) {
-                socket.emit("stop typing", selectedChat._id);
-                setTyping(false);
-            }
-        }, timerLength);
-    };
+    console.log(messages.uploadfile, "34058")
     return (
         <>
             {
                 selectedChat ? (
                     <>
-                        <Text fontSize={{ base: "28px", md: "30px" }}
-                            pb={5}
+
+                        <Text style={{ display: "flex" }} fontSize={{ base: "28px", md: "30px" }}
+                            // pb={5}
                             px={4}
                             fontFamily="Work sans"
-                            d="flex"
                             justifyContent={{ base: "space-between" }}
                             alignItems="center">
                             <IconButton
@@ -193,6 +205,7 @@ const SingleChat = (props) => {
                                     </>
                                 ))}
                         </Text>
+
                         <Box
                             d="flex"
                             flexDir="column"
@@ -200,7 +213,6 @@ const SingleChat = (props) => {
                             p={3}
                             bg="#E8E8E8"
                             w="100%"
-                            h="100%"
                             borderRadius="lg"
                             overflowY="hidden"
                         >
@@ -213,16 +225,21 @@ const SingleChat = (props) => {
                                     margin="auto"
                                 />
                             ) : (
-                                <div className="messages">
-                                    <ScrollableChat messages={messages} />
-                                </div>
+                                <>
+                                    <div className="messages">
+                                        <ScrollableChat messages={messages} />
+                                    </div>
+                                    {!messages.isImage && isUpload ? <span><img src={isUpload} alt="message" height="auto" maxWidth="40%" /></span> : ""}
+                                </>
+
                             )}
 
                             <FormControl
                                 onKeyDown={sendMessage}
                                 id="first-name"
                                 isRequired
-                                mt={3}
+                                mt={2}
+                                mb={0}
                             >
                                 {istyping ? (
                                     <div>
@@ -236,15 +253,31 @@ const SingleChat = (props) => {
                                 ) : (
                                     <></>
                                 )}
-                                <Input
-                                    variant="filled"
-                                    bg="#cce4e5f5"
-                                    placeholder="Enter a message.."
-                                    value={newMessage}
-                                    onChange={typingHandler}
-                                    autoFocus={true}
 
-                                />
+
+                                <Text style={{ display: "flex" }} fontSize={{ base: "28px", md: "30px" }}
+                                    // pb={5}
+                                    px={4}
+                                    fontFamily="Work sans"
+                                    justifyContent={{ base: "space-between" }}
+                                    alignItems="center">
+
+                                    <InputEmoji
+                                        value={newMessage}
+                                        onChange={setNewMessage}
+                                        cleanOnEnter
+                                        onEnter={handleOnEnter}
+                                        placeholder="Type a message .........."
+                                    />
+                                    <InputGroup>
+                                        <InputLeftElement
+                                            className="InputLeft"
+                                            children={<LinkIcon className="SearchIcon" color="gray.300" />}
+                                            size="xs"
+                                        />
+                                        <Input type="file" name="uploadfile" accept="image/*" onChange={(e) => doHandleUpload(e)} className="Input" variant="outline" size="xs" />
+                                    </InputGroup>
+                                </Text>
                             </FormControl>
                         </Box>
                     </>

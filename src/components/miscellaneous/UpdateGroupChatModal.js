@@ -18,7 +18,7 @@ import {
     FormLabel,
 } from "@chakra-ui/react";
 import axios from "axios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChatState } from "../../Context/ChatProvider";
 import UserBadgeItem from "../userAvatar/UserBadgeItem";
 import UserListItem from "../userAvatar/UserListItems";
@@ -26,15 +26,16 @@ import UserListItem from "../userAvatar/UserListItems";
 const UpdateGroupChatModal = (props) => {
     const { isOpen, onOpen, onClose } = useDisclosure();
     const [groupChatName, setGroupChatName] = useState();
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState();
     const [searchResult, setSearchResult] = useState([]);
     const [loading, setLoading] = useState(false);
     const [renameloading, setRenameLoading] = useState(false);
     const toast = useToast();
     const { fetchMessages, fetchAgain, setFetchAgain } = props
     const { selectedChat, setSelectedChat, user } = ChatState();
-    const [imagePreview, setImagePreview] = useState();
+    const [imagePreview, setImagePreview] = useState("");
     const [image, setImage] = useState();
+
     const handleSearch = async (query) => {
         setSearch(query);
         if (!query) {
@@ -62,10 +63,12 @@ const UpdateGroupChatModal = (props) => {
             });
             setLoading(false);
         }
+
     };
     /* Image Uploading */
     const handleImage = async (e) => {
         const { name } = e.target;
+
         if (name === 'groupImage') {
             setImagePreview(URL.createObjectURL(e.target.files[0]));
             setImage(e.target.files[0]);
@@ -73,31 +76,27 @@ const UpdateGroupChatModal = (props) => {
     }
 
     const handleRename = async () => {
-        if (!groupChatName) return;
-
+        // if (!groupChatName) return;
         try {
             setRenameLoading(true);
             const config = {
                 headers: {
                     Authorization: `Bearer ${user.token}`,
                 },
-            };
-            console.log(image, 9485)
+            }
             const { data } = await axios.put(
                 `/api/chat/renamegroup`,
                 {
                     chatId: selectedChat._id,
                     chatName: groupChatName,
-                    image,
+                    groupImage: image,
                 },
                 config
             );
-            console.log(data, 93580)
             setSelectedChat(data);
             setFetchAgain(!fetchAgain);
             setRenameLoading(false);
-            setSearchResult([])
-            onClose()
+
         } catch (error) {
             toast({
                 title: "Error Occured!",
@@ -110,6 +109,8 @@ const UpdateGroupChatModal = (props) => {
             setRenameLoading(false);
         }
         setGroupChatName("");
+        setSearchResult([])
+        onClose()
     };
 
     const handleAddUser = async (user1) => {
@@ -167,7 +168,7 @@ const UpdateGroupChatModal = (props) => {
         }
         setGroupChatName("");
     };
-
+    console.log(selectedChat.groupImage);
     const handleRemove = async (user1) => {
         if (selectedChat.groupAdmin._id !== user._id && user1._id !== user._id) {
             toast({
@@ -250,7 +251,7 @@ const UpdateGroupChatModal = (props) => {
                                         }}
                                         onError={({ currentTarget }) => {
                                             currentTarget.onerror = null; // prevents looping
-                                            currentTarget.src = 'https://img.favpng.com/2/12/12/computer-icons-portable-network-graphics-user-profile-avatar-png-favpng-L1ihcbxsHbnBKBvjjfBMFGbb7.jpg';
+                                            currentTarget.src = 'https://www.w3schools.com/w3images/avatar6.png';
                                         }}
                                     />
                                     <span
@@ -296,16 +297,6 @@ const UpdateGroupChatModal = (props) => {
 
                         </FormControl>
 
-                        <Button
-                            variant="solid"
-                            colorScheme="teal"
-                            ml={1}
-                            mb={2}
-                            isLoading={renameloading}
-                            onClick={handleRename}
-                        >
-                            Update
-                        </Button>
 
                         <FormControl>
                             <Input
@@ -317,6 +308,7 @@ const UpdateGroupChatModal = (props) => {
                         <Box w="100%" d="flex" flexWrap="wrap" pb={3}>
                             {selectedChat.users.map((u) => (
                                 <UserBadgeItem
+
                                     key={u._id}
                                     user={u}
                                     admin={selectedChat.groupAdmin}
@@ -324,6 +316,16 @@ const UpdateGroupChatModal = (props) => {
                                 />
                             ))}
                         </Box>
+                        <Button
+                            variant="solid"
+                            colorScheme="teal"
+                            ml={1}
+                            mb={2}
+                            isLoading={renameloading}
+                            onClick={handleRename}
+                        >
+                            Update
+                        </Button>
 
                         {loading ? (
                             <Spinner size="lg" />

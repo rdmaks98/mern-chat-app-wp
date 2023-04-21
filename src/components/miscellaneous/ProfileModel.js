@@ -27,19 +27,19 @@ const ProfileModal = ({ user, children }) => {
                 <ModalOverlay />
                 <ModalContent h="410px">
                     <ModalHeader
+                        style={{ display: "flex" }}
                         fontSize="40px"
                         fontFamily="Work sans"
-                        d="flex"
                         justifyContent="center"
                     >
                         {user.name}
                     </ModalHeader>
                     <ModalCloseButton />
                     <ModalBody
-                        d="flex"
+                        style={{ display: "flex" }}
                         flexDir="column"
                         alignItems="center"
-                        justifyContent="space-between"
+                        justifyContent="center"
                     >
                         <Image
                             borderRadius="full"

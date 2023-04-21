@@ -7,14 +7,13 @@ import MyChat from '../components/MyChat';
 const ChatPage = () => {
     const [fetchAgain, setFetchAgain] = useState(false);
     const { user } = ChatState();
-
-
     return (
-        <div style={{ width: "100%" }}>
+        <div style={{ width: "100%", flexDirection: "column", display: "flex" }}>
+            {/* <Flex> */}
             {user && <SideDrawer />}
+            {/* </Flex> */}
             <Flex>
-
-                <Square style={{ display: "block" }} >
+                <Square >
                     {user && <MyChat fetchAgain={fetchAgain} />}
                 </Square>
                 <Box flex='1' p={3}>

@@ -20,6 +20,7 @@ import { useState } from "react";
 import { ChatState } from "../../Context/ChatProvider";
 import UserBadgeItem from "../userAvatar/UserBadgeItem";
 import UserListItem from "../userAvatar/UserListItems";
+// import { profileImage } from "../../constant/images"
 const GroupChatModel = ({ children }) => {
 
     const { isOpen, onOpen, onClose } = useDisclosure();
@@ -29,7 +30,7 @@ const GroupChatModel = ({ children }) => {
     const [searchResult, setSearchResult] = useState([]);
     const [loading, setLoading] = useState(false);
     const toast = useToast();
-    const [avatarPreview, setAvatarPreview] = useState('https://react-training.tutorialstaging.tech/assets/images/avatars/avatar_18.jpg');
+    const [avatarPreview, setAvatarPreview] = useState();
     const [image, setImage] = useState();
     const { user, chats, setChats } = ChatState();
 
@@ -82,11 +83,12 @@ const GroupChatModel = ({ children }) => {
 
     /* Image Uploading */
     const handleImage = async (e) => {
-        const { name, value } = e.target;
+        const { name } = e.target;
         if (name === 'image') {
             setAvatarPreview(URL.createObjectURL(e.target.files[0]));
             setImage(e.target.files[0]);
         }
+        console.group("add group")
     };
 
     const handleSubmit = async () => {
@@ -100,7 +102,6 @@ const GroupChatModel = ({ children }) => {
             });
             return;
         }
-
         try {
             const config = {
                 headers: {
@@ -125,10 +126,7 @@ const GroupChatModel = ({ children }) => {
                 isClosable: true,
                 position: "bottom",
             });
-            setGroupChatName("")
-            setSelectedUsers([])
-            setSearchResult([])
-            setImage()
+
         } catch (error) {
             toast({
                 title: "Failed to Create the Chat!",
@@ -139,6 +137,11 @@ const GroupChatModel = ({ children }) => {
                 position: "bottom",
             });
         }
+        setGroupChatName("")
+        setSelectedUsers([])
+        setSearchResult([])
+        setImage()
+        setAvatarPreview()
     };
 
 
@@ -159,27 +162,13 @@ const GroupChatModel = ({ children }) => {
                     </ModalHeader>
                     <ModalCloseButton />
                     <ModalBody d="flex" flexDir="column" alignItems="center">
-                        <FormControl>
-                            <Input
-                                placeholder="Chat Name"
-                                mb={3}
-                                onChange={(e) => setGroupChatName(e.target.value)}
-                            />
-                        </FormControl>
-                        <FormControl>
-                            <Input
-                                placeholder="Add Users eg: John, Piyush, Jane"
-                                mb={1}
-                                onChange={(e) => handleSearch(e.target.value)}
-                            />
-                        </FormControl>
                         <div
                             style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', marginBottom: '40px' }}
                         >
                             <FormLabel htmlFor="ImageUpload">
                                 <div style={{ position: 'relative' }}>
                                     <img
-                                        src={avatarPreview}
+                                        src={avatarPreview ? avatarPreview : "https://www.w3schools.com/w3images/avatar6.png"}
                                         alt="Avatar Preview"
                                         className="img-fluid"
                                         style={{
@@ -191,7 +180,7 @@ const GroupChatModel = ({ children }) => {
                                         }}
                                         onError={({ currentTarget }) => {
                                             currentTarget.onerror = null; // prevents looping
-                                            currentTarget.src = '/assets/images/avatars/avatar_18.jpg';
+                                            currentTarget.src = 'https://www.w3schools.com/w3images/avatar6.png';
                                         }}
                                     />
                                     <span
@@ -227,6 +216,21 @@ const GroupChatModel = ({ children }) => {
                                 onChange={(e) => handleImage(e)}
                             />
                         </div>
+                        <FormControl>
+                            <Input
+                                placeholder="Chat Name"
+                                mb={3}
+                                onChange={(e) => setGroupChatName(e.target.value)}
+                            />
+                        </FormControl>
+                        <FormControl>
+                            <Input
+                                placeholder="Add Users eg: John, Piyush, Jane"
+                                mb={1}
+                                onChange={(e) => handleSearch(e.target.value)}
+                            />
+                        </FormControl>
+
                         <Box w="100%" d="flex" flexWrap="wrap">
                             {selectedUsers.map((u) => (
                                 <UserBadgeItem
