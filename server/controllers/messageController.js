@@ -2,19 +2,25 @@ import asyncHandler from "express-async-handler";
 import Chat from "../models/ChatModel.js";
 import Message from "../models/MessageModel.js";
 import User from "../models/UserModel.js";
+import { uploadFile } from "../middleware/s3Middleware.js";
 
 const sendMessgae = asyncHandler(async (req, res) => {
     const { content, chatId } = req.body;
-
-    if (!content || !chatId) {
-        console.log("Invalid data passed into request");
-        return res.sendStatus(400);
+    let file = req.file;
+    let result;
+    if (file) {
+        result = await uploadFile(file);
     }
+    // if (!content || !chatId) {
+    //     console.log("Invalid data passed into request");
+    //     return res.sendStatus(400);
+    // }
 
     var newMessage = {
         sender: req.user._id,
         content: content,
         chat: chatId,
+        uploadfile: result ? result.Location : ""
     };
     try {
         var message = await Message.create(newMessage);

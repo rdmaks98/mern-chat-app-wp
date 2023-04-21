@@ -7,6 +7,9 @@ const messageModel = mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Chat",
     },
+    uploadfile: {
+        type: String,
+    }
 }, {
     timestamps: true
 })

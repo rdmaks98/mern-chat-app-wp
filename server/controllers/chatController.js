@@ -67,7 +67,10 @@ const fetchChat = asyncHandler(async (req, res) => {
 
 const createGroupChat = asyncHandler(async (req, res) => {
     const file = req.file;
-    const result = await uploadFile(file);
+    let result;
+    if (file) {
+        result = await uploadFile(file);
+    }
     if (!req.body.users || !req.body.name) {
         return res.status(400).send({ message: "Please Fill all the fields" });
     }
@@ -88,7 +91,7 @@ const createGroupChat = asyncHandler(async (req, res) => {
             users: users,
             isGroupChat: true,
             groupAdmin: req.user,
-            groupImage: result.Location
+            groupImage: result ? result.Location : ""
         });
 
         const fullGroupChat = await Chat.findOne({ _id: groupChat._id })
@@ -107,14 +110,14 @@ const createGroupChat = asyncHandler(async (req, res) => {
 const renameGroup = asyncHandler(async (req, res) => {
     const file = req.file;
     const { chatId, chatName } = req.body;
-    // const result = await uploadFile(file);
-    // console.log(result)
+    let result;
+    if (file) {
+        result = await uploadFile(file);
+    }
+    const findGroup = await Chat.findById(chatId);
     const updatedChat = await Chat.findByIdAndUpdate(
         chatId,
-        {
-            chatName: chatName,
-            // groupImage: result.Location
-        },
+        req.body,
         {
             new: true,
         }
@@ -129,7 +132,6 @@ const renameGroup = asyncHandler(async (req, res) => {
         res.json(updatedChat);
     }
 })
-
 
 const addGroup = asyncHandler(async (req, res) => {
     const { chatId, userId } = req.body;

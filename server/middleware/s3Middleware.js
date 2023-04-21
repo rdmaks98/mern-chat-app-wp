@@ -5,8 +5,8 @@ console.log(process.env.AWS_ACCESS_KEY)
 console.log(process.env.AWS_REGION)
 console.log(process.env.AWS_BUCKET)
 aws.config.update({
-    secretAccessKey: "G4dsbWiruUL9Uc/Skv5ZM2aRCU4PebU3nyAMgOn/",
-    accessKeyId: "AKIAQHKK5I5623CRU2TO",
+    secretAccessKey: "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",
+    accessKeyId: "AKIAQHKK5I56SODNR6OC",
     region: "us-east-1"
 });
 
