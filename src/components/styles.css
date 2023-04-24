@@ -3,6 +3,8 @@
 .messages {
 	display: flex;
 	flex-direction: column;
-	/* overflow-y: scroll; */
+	overflow-y: scroll;
 	scrollbar-width: none;
+	overflow: hidden;
+	max-height: 80vh;
 }

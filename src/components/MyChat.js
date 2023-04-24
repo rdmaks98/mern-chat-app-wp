@@ -55,6 +55,7 @@ const MyChat = (props) => {
             bg="white"
             borderRadius="lg"
             borderWidth="1px"
+
         >
             <Box
                 pb={3}
@@ -84,12 +85,13 @@ const MyChat = (props) => {
                 p={3}
                 bg="#F8F8F8"
                 w="100%"
-                h="128vh"
+                h="79.5vh"
                 borderRadius="lg"
-                overflowY="hidden"
+                overflow="scroll"
+                overflowX="hidden"
             >
                 {chats ? (
-                    <Stack overflowY="scroll">
+                    <Stack >
                         {chats.map((chat) => (
                             <Box
                                 onClick={() => setSelectedChat(chat)}

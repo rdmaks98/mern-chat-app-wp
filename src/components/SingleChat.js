@@ -168,7 +168,6 @@ const SingleChat = (props) => {
             }
         });
     });
-    console.log(messages.uploadfile, "34058")
     return (
         <>
             {
@@ -213,6 +212,7 @@ const SingleChat = (props) => {
                             p={3}
                             bg="#E8E8E8"
                             w="100%"
+                            height="auto"
                             borderRadius="lg"
                             overflowY="hidden"
                         >
@@ -229,7 +229,7 @@ const SingleChat = (props) => {
                                     <div className="messages">
                                         <ScrollableChat messages={messages} />
                                     </div>
-                                    {!messages.isImage && isUpload ? <span><img src={isUpload} alt="message" height="auto" maxWidth="40%" /></span> : ""}
+                                    {!messages.isImage && isUpload ? <span><img src={isUpload} alt="message" height="auto" style={{ maxWidth: "50%" }} /></span> : ""}
                                 </>
 
                             )}
@@ -282,7 +282,7 @@ const SingleChat = (props) => {
                         </Box>
                     </>
                 ) : (
-                    <Box d="flex" alignItems="center" justifyContent="center" h="100%">
+                    <Box d="flex" alignItems="center" justifyContent="center" h="20vh">
                         <Text fontSize="3xl" pb={3} fontFamily="Work sans">
                             Click on a user to start chatting
                         </Text>
